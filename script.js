@@ -1,21 +1,30 @@
-let requisicao = fetch("https://viacep.com.br/ws/01002324/json/")
-.then(resposta => {
-    console.log("Primeiro then (resposta json)");
-    return resposta.json();
-})
-.then(r => {
-    if (r.erro) {
-        throw Error("O CEP é inexistente!");
+async function buscarEndereco(cep) {
+    const mensagemErro = document.getElementById("erro");
+    mensagemErro.innerHTML = "";
+    try {
+    let consultaCEP = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    let consultaCEPConvertida = await consultaCEP.json();
+    if (consultaCEPConvertida.erro) {
+        throw Error("CEP NÃO EXISTE!")
     }
-    else {
-        console.log("No segundo then (CEP não é inexistente):");
-        console.log(r);
+    const cidade = document.getElementById("cidade");
+    const logradouro = document.getElementById("endereco");
+    const estado = document.getElementById("estado");
+    console.log(consultaCEPConvertida);
+
+    cidade.value = consultaCEPConvertida.localidade;
+    logradouro.value = consultaCEPConvertida.logradouro;
+    estado.value = consultaCEPConvertida.uf;
+    
+    return consultaCEPConvertida;
+    }
+    catch(erro) {
+        mensagemErro.innerHTML = "<p>CEP inválido, tente novamente.</p>"
+        console.log("What: " + erro);
+        
     }
     
-})
-.catch(error => {
-    console.log("No catch, quando foi usado o throw error");
-    console.log(error)
-});
+}
 
-console.log(requisicao)
+const cep = document.getElementById("cep");
+cep.addEventListener("focusout", () => buscarEndereco(cep.value));
